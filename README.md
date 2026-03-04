@@ -3,7 +3,7 @@
 A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays real-time rate limit usage, context window, and session info.
 
 ```
-~/P/Zcp.Omega.Zio/BE.Main [main*] (Opus) $1.58 1h30m
+~ [main*] (Opus) $1.58 1h30m
 ctx ##################---------- 65% (120K/200K)  5h ####- 98% ~28m  7d #---- 35% ~2d0h
 ```
 
