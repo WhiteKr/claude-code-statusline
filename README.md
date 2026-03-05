@@ -3,9 +3,9 @@
 A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays real-time rate limit usage, context window, and session info.
 
 ```
-[Opus] BE.Main  main*  $1.58  90m0s
-━━━━━━━━━━━━━━━━━━───────── 65% 120K/200K
-5h ━━━━━━━━━━━━━━─ 98% ~28m | 7d:Op ━━━━━━─────────── 35% ~2d0h
+[Opus] my-project  main*  $0.42  12m30s
+━━━━━━━━━━━━──────── 45% 90K/200K
+5h ━━━━━━━───── 62% ~3h15m | 7d:Op ━━━─────── 28% ~4d12h
 ```
 
 ## Features
@@ -64,26 +64,26 @@ Restart Claude Code.
 | Element | Description |
 |---------|-------------|
 | `[Opus]` | Current model (without "Claude" prefix) |
-| `BE.Main` | Current directory name |
+| `my-project` | Current directory name |
 | `main*` | Git branch (* = uncommitted changes) |
-| `$1.58` | Session cost |
-| `90m0s` | Session duration |
+| `$0.42` | Session cost |
+| `12m30s` | Session duration |
 
 ### Line 2 — Context window
 | Element | Description |
 |---------|-------------|
-| `━━━━━━━━━───────` | Context usage bar (Unicode) |
-| `65%` | Context usage percentage |
-| `120K/200K` | Current tokens / max tokens |
-| `+$1.85/$20` | Extra usage (only when consuming) |
+| `━━━━━━━━━━━━──────── ` | Context usage bar (Unicode) |
+| `45%` | Context usage percentage |
+| `90K/200K` | Current tokens / max tokens |
+| `+$2.50/$20` | Extra usage (only when consuming) |
 
 ### Line 3 — Rate limits
 | Element | Description |
 |---------|-------------|
-| `5h ━━━━━━━━━━━━━━─ 98%` | 5-hour rate limit bar |
-| `~28m` | Time until 5h reset |
-| `7d:Op ━━━━─────── 35%` | 7-day model-specific rate limit |
-| `~2d0h` | Time until 7d reset |
+| `5h ━━━━━━━───── 62%` | 5-hour rate limit bar |
+| `~3h15m` | Time until 5h reset |
+| `7d:Op ━━━─────── 28%` | 7-day model-specific rate limit |
+| `~4d12h` | Time until 7d reset |
 
 ## Color Coding
 
