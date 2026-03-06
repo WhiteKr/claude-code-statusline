@@ -3,9 +3,9 @@
 A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays real-time rate limit usage, context window, and session info.
 
 ```
-[Opus] my-project  main*  $0.42  12m30s
-━━━━━━━━━━━━──────── 45% 90K/200K
-5h ━━━━━━━───── 62% ~3h15m | 7d:Op ━━━─────── 28% ~4d12h
+Projects/my-project  main*  [Opus]  12m30s
+━━━━━━━━━━━━━━━──────────── 45% 90K/200K ($0.42)
+5h ━━━━━━━─── 62% ~3h15m | 7d:Op ━━━─────── 28% ~4d12h
 ```
 
 ## Features
@@ -18,7 +18,7 @@ A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-
 - **Extra usage** — shown only when actively consuming extra credits ($used/$limit)
 - **Git branch** — current branch with dirty indicator
 - **Session info** — model name, cumulative cost, session duration
-- **Fixed bar widths** — context 20, rate limits 10 each
+- **Aligned bar widths** — context dynamic (15–40), rate limits 10 each
 - **Non-blocking** — rate limit API calls are cached (60s) and refreshed in the background
 
 ## Requirements
@@ -63,18 +63,18 @@ Restart Claude Code.
 ### Line 1 — Session info
 | Element | Description |
 |---------|-------------|
-| `[Opus]` | Current model (without "Claude" prefix) |
-| `my-project` | Current directory name |
+| `Projects/my-project` | Parent/current directory |
 | `main*` | Git branch (* = uncommitted changes) |
-| `$0.42` | Session cost |
+| `[Opus]` | Current model (without "Claude" prefix) |
 | `12m30s` | Session duration |
 
 ### Line 2 — Context window
 | Element | Description |
 |---------|-------------|
-| `━━━━━━━━━━━━──────── ` | Context usage bar (Unicode) |
+| `━━━━━━━━━━━━━━━────────────` | Context usage bar (Unicode) |
 | `45%` | Context usage percentage |
 | `90K/200K` | Current tokens / max tokens |
+| `($0.42)` | Session cost |
 | `+$2.50/$20` | Extra usage (only when consuming) |
 
 ### Line 3 — Rate limits
@@ -87,11 +87,22 @@ Restart Claude Code.
 
 ## Color Coding
 
+**Context window** — more aggressive thresholds (triggers earlier):
+
+| Color | Threshold |
+|-------|-----------|
+| Green | < 30% |
+| Cyan | 30–54% |
+| Yellow | 55–74% |
+| Red | 75%+ |
+
+**Rate limits** (5h / 7d):
+
 | Color | Threshold |
 |-------|-----------|
 | Green | < 50% |
-| Cyan | 50-69% |
-| Yellow | 70-89% |
+| Cyan | 50–69% |
+| Yellow | 70–89% |
 | Red | 90%+ |
 
 ## How It Works
