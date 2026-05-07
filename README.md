@@ -1,33 +1,29 @@
 # Claude Code Statusline
 
-A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays real-time rate limit usage, context window, and session info.
+A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays model, project, git status, context window, and rate limit usage in a compact 3-line layout.
 
 ```
-Projects/my-project  main*  [Opus]  12m30s
-━━━━━━━━━━━━━━━──────────── 45% 90K/200K ($0.42)
-5h ━━━━━━━─── 62% ~3h15m | 7d:Op ━━━─────── 28% ~4d12h
+ Claude Opus 4.7 │ my-project │ main ✎3 ↑2
+ CTX ━━━━━━━━━━━━━───────────────── 045%
+ 5H ━━━━━━──── 062% ↻03h15m │ 7D ━━──────── 028% ↻04d18h
 ```
 
 ## Features
 
-- **3-line layout** — model/dir/branch, context bar, rate limits on separate lines
+- **3-line layout** — model/project/branch, context bar, rate limits on separate lines
 - **Unicode progress bars** — `━` filled / `─` empty for clean visuals
-- **Context window** — responsive bar with token count (current/max)
-- **5-hour rate limit** — usage % with time until reset
-- **7-day rate limit** — model-specific (Opus/Sonnet) when available
-- **Extra usage** — shown only when actively consuming extra credits ($used/$limit)
-- **Git branch** — current branch with dirty indicator
-- **Session info** — model name, cumulative cost, session duration
-- **Aligned bar widths** — context dynamic (15–40), rate limits 10 each
-- **Non-blocking** — rate limit API calls are cached (60s) and refreshed in the background
+- **Context window** — 30-char bar with percent
+- **5-hour & 7-day rate limits** — 10-char bars with percent and time-until-reset
+- **Git branch** — current branch with dirty file count (`✎N`) and upstream divergence (`↑ahead ↓behind`)
+- **Dim leading zeros** — fixed-width numerics with leading zeros dimmed for visual stability
+- **Zero external calls** — rate limit data read directly from Claude Code's stdin JSON
 
 ## Requirements
 
-- **Linux** (uses GNU `stat -c` and `date -d`)
+- `bash`
 - `jq` — JSON parsing
-- `curl` — API calls
 - `git` — optional, for branch display
-- Claude Code with OAuth login (for rate limit data)
+- Claude Code recent enough to provide `.rate_limits` in the statusline JSON
 
 ## Install
 
@@ -60,61 +56,54 @@ Restart Claude Code.
 
 ## What's Displayed
 
-### Line 1 — Session info
+### Line 1 — Model │ Project │ Branch
 | Element | Description |
 |---------|-------------|
-| `Projects/my-project` | Parent/current directory |
-| `main*` | Git branch (* = uncommitted changes) |
-| `[Opus]` | Current model (without "Claude" prefix) |
-| `12m30s` | Session duration |
+| `Claude Opus 4.7` | Model display name |
+| `my-project` | Current project directory name |
+| `main` | Git branch (omitted if not in a repo) |
+| `✎3` | Number of modified/untracked files |
+| `↑2` / `↓1` | Commits ahead / behind upstream |
 
 ### Line 2 — Context window
 | Element | Description |
 |---------|-------------|
-| `━━━━━━━━━━━━━━━────────────` | Context usage bar (Unicode) |
-| `45%` | Context usage percentage |
-| `90K/200K` | Current tokens / max tokens |
-| `($0.42)` | Session cost |
-| `+$2.50/$20` | Extra usage (only when consuming) |
+| `CTX ━━━━━━━━━━━━━─────────────────` | 30-char usage bar |
+| `045%` | Usage percent (leading zero dimmed) |
+
+Shows `CTX --` when context usage data is unavailable.
 
 ### Line 3 — Rate limits
 | Element | Description |
 |---------|-------------|
-| `5h ━━━━━━━───── 62%` | 5-hour rate limit bar |
-| `~3h15m` | Time until 5h reset |
-| `7d:Op ━━━─────── 28%` | 7-day model-specific rate limit |
-| `~4d12h` | Time until 7d reset |
+| `5H ━━━━━━────` | 5-hour rate limit bar (10-char) |
+| `062%` | 5-hour usage percent |
+| `↻03h15m` | Time until 5-hour reset |
+| `7D ━━────────` | 7-day rate limit bar (10-char) |
+| `028%` | 7-day usage percent |
+| `↻04d18h` | Time until 7-day reset |
+
+Shows `5H --` / `7D --` when the corresponding rate limit isn't reported.
 
 ## Color Coding
 
-**Context window** — more aggressive thresholds (triggers earlier):
+All bars share the same thresholds:
 
-| Color | Threshold |
-|-------|-----------|
-| Green | < 30% |
-| Cyan | 30–54% |
-| Yellow | 55–74% |
-| Red | 75%+ |
-
-**Rate limits** (5h / 7d):
-
-| Color | Threshold |
-|-------|-----------|
-| Green | < 50% |
-| Cyan | 50–69% |
-| Yellow | 70–89% |
-| Red | 90%+ |
+| Color  | Threshold |
+|--------|-----------|
+| Green  | < 50%     |
+| Yellow | 50–79%    |
+| Red    | 80%+      |
 
 ## How It Works
 
-Claude Code pipes JSON with session data to the statusline script via stdin. The script:
+Claude Code pipes JSON with session and rate-limit data to the statusline script via stdin. The script:
 
-1. Parses context window, model, and cost from the JSON (single `jq` call)
-2. Reads cached rate limit data from `/tmp/.claude-rate-limits-cache`
-3. If cache is stale (>60s), triggers a background API call to `api.anthropic.com/api/oauth/usage`
-4. Renders three lines with ANSI colors, Unicode bars, and context-aware color thresholds
+1. Parses model, project dir, context usage, and rate limits in a single `jq` call
+2. Renders the git branch line by shelling out to `git` for branch, dirty status, and upstream divergence
+3. Draws Unicode bars and ANSI-colored percentages with dim leading zeros for fixed-width alignment
 
-No credentials are stored in the script — OAuth tokens are read at runtime from `~/.claude/.credentials.json` (managed by Claude Code).
+There are no API calls, no caching, and no credential reads — everything comes from stdin or local `git`.
 
 ## License
 
