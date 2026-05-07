@@ -126,7 +126,7 @@ if [ -n "$git_branch" ]; then
         [ "$behind" -gt 0 ] 2>/dev/null && branch_str="${branch_str} ↓${behind}"
     fi
 fi
-header=" $J_MODEL │ $project_name │${branch_str}"
+header="$J_MODEL │ $project_name │${branch_str}"
 
 # ── Assemble output by layout ─────────────────
 case "$LINES" in
@@ -134,13 +134,13 @@ case "$LINES" in
         render_ctx_seg 30; ctx="$_ctx"
         render_rate_seg "5H" "$J_H5_PCT" "$J_H5_RESET" 10 1; seg5="$_seg"
         render_rate_seg "7D" "$J_D7_PCT" "$J_D7_RESET" 10 1; seg7="$_seg"
-        printf "%b\n %b\n %b │ %b\n" "$header" "$ctx" "$seg5" "$seg7"
+        printf "%b\n%b\n%b │ %b\n" "$header" "$ctx" "$seg5" "$seg7"
         ;;
     2)
         render_ctx_seg 15; ctx="$_ctx"
         render_rate_seg "5H" "$J_H5_PCT" "$J_H5_RESET" 8 0; seg5="$_seg"
         render_rate_seg "7D" "$J_D7_PCT" "$J_D7_RESET" 8 0; seg7="$_seg"
-        printf "%b\n %b │ %b │ %b\n" "$header" "$ctx" "$seg5" "$seg7"
+        printf "%b\n%b │ %b │ %b\n" "$header" "$ctx" "$seg5" "$seg7"
         ;;
     1)
         render_ctx_seg 5; ctx="$_ctx"
