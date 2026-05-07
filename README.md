@@ -27,16 +27,25 @@ A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-
 
 ## Install
 
+One-liner (downloads the installer + statusline script from the latest GitHub release):
+
+```bash
+curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/download/install.sh | bash
+```
+
+Or clone and run:
+
 ```bash
 git clone https://github.com/whitekr/claude-code-statusline.git
 cd claude-code-statusline
 ./install.sh
 ```
 
-Or manually:
+Or fully manual:
 
 ```bash
-cp statusline-command.sh ~/.claude/statusline-command.sh
+curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/download/statusline-command.sh \
+  -o ~/.claude/statusline-command.sh
 chmod +x ~/.claude/statusline-command.sh
 ```
 
