@@ -61,36 +61,6 @@ The installer prompts you to pick a 1-, 2-, or 3-line layout (with rendered prev
 curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/download/install.sh | STATUSLINE_LINES=2 bash
 ```
 
-Or clone and run:
-
-```bash
-git clone https://github.com/whitekr/claude-code-statusline.git
-cd claude-code-statusline
-./install.sh
-```
-
-Or fully manual:
-
-```bash
-curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/download/statusline-command.sh \
-  -o ~/.claude/statusline-command.sh
-chmod +x ~/.claude/statusline-command.sh
-```
-
-Then add to `~/.claude/settings.json` (the trailing `3` is the layout — change to `1` or `2` for fewer lines):
-
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline-command.sh 3",
-    "padding": 2
-  }
-}
-```
-
-Restart Claude Code.
-
 ### Changing layout later
 
 Re-run the installer (it detects your current choice and offers it as the default), or edit `~/.claude/settings.json` directly and change the trailing `1`/`2`/`3` argument on `.statusLine.command`.
