@@ -14,7 +14,7 @@ set -eu
 REPO="whitekr/claude-code-statusline"
 RELEASE_BASE="https://github.com/${REPO}/releases/latest/download"
 TARGET="$HOME/.claude/statusline-command.sh"
-SETTINGS="$HOME/.claude/settings.local.json"
+SETTINGS="$HOME/.claude/settings.json"
 
 # Print a rendered preview for layout 1, 2, or 3.
 print_preview() {
@@ -124,7 +124,7 @@ main() {
     echo "  Selected: ${layout}-line layout"
     local cmd_value="~/.claude/statusline-command.sh $layout"
 
-    # Configure settings.local.json — install.sh owns .statusLine.command, preserves everything else.
+    # Configure settings.json — install.sh owns .statusLine.command, preserves everything else.
     if [ -f "$SETTINGS" ]; then
         if ! command -v jq >/dev/null 2>&1; then
             echo "Error: jq is required to merge into existing $SETTINGS" >&2
@@ -158,7 +158,7 @@ EOF
     echo ""
     echo "Requirements: jq, curl, git (optional)"
     echo "To change layout later: re-run the installer, or edit"
-    echo "  ~/.claude/settings.local.json   →   .statusLine.command"
+    echo "  ~/.claude/settings.json   →   .statusLine.command"
     echo "and pass 1, 2, or 3 as the script argument."
 }
 
