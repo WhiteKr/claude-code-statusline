@@ -2,7 +2,7 @@
 
 A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays model, project, git status, context window, and rate limit usage. Pick a 1-, 2-, or 3-line layout at install time.
 
-**3-line (default)** — context bar gets its own line, rate limits with countdowns:
+**3-line (default)** — context bar gets its own line, full-width gauges:
 ```
 Claude Opus 4.7 │ my-project │ main ✎3 ↑2
 CTX ━━━━━━━━━━━━━───────────────── 045%
@@ -12,12 +12,12 @@ CTX ━━━━━━━━━━━━━────────────�
 **2-line** — header, then combined gauges:
 ```
 Claude Opus 4.7 │ my-project │ main ✎3 ↑2
-CTX ━━━━━━───────── 045% │ 5H ━━━━──── 062% │ 7D ━━────── 028%
+CTX ━━━━━━───────── 045% │ 5H ━━━━──── 062% ↻03h15m │ 7D ━━────── 028% ↻04d18h
 ```
 
 **1-line** — everything on one line, with mini bars:
 ```
-Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% │ 5H ━━━── 062% │ 7D ━──── 028%
+Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% │ 5H ━━━── 062% ↻03h15m │ 7D ━──── 028% ↻04d18h
 ```
 
 ## Features
@@ -25,7 +25,7 @@ Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% �
 - **Choose your layout** — 1, 2, or 3 lines, picked interactively during install
 - **Unicode progress bars** — `━` filled / `─` empty, every layout shows bars (5/15/30 chars depending on layout)
 - **Context window** — bar + percent on every layout
-- **5-hour & 7-day rate limits** — bars + percent; countdowns shown in 3-line mode
+- **5-hour & 7-day rate limits** — bars + percent + reset countdowns on every layout
 - **Git branch** — current branch with dirty file count (`✎N`) and upstream divergence (`↑ahead ↓behind`)
 - **Dim leading zeros** — fixed-width numerics with leading zeros dimmed for visual stability
 - **Zero external calls** — rate limit data read directly from Claude Code's stdin JSON

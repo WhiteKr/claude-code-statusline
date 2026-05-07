@@ -20,11 +20,11 @@ SETTINGS="$HOME/.claude/settings.json"
 print_preview() {
     case "$1" in
         1)
-            printf "      Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX \033[32m━━───\033[0m \033[2;90m0\033[0m45%% │ 5H \033[33m━━━──\033[0m \033[2;90m0\033[0m62%% │ 7D \033[32m━────\033[0m \033[2;90m0\033[0m28%%\n"
+            printf "      Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX \033[32m━━───\033[0m \033[2;90m0\033[0m45%% │ 5H \033[33m━━━──\033[0m \033[2;90m0\033[0m62%% ↻\033[2;90m0\033[0m3h\033[2;90m1\033[0m5m │ 7D \033[32m━────\033[0m \033[2;90m0\033[0m28%% ↻\033[2;90m0\033[0m4d\033[2;90m1\033[0m8h\n"
             ;;
         2)
             printf "      Claude Opus 4.7 │ my-project │ main ✎3 ↑2\n"
-            printf "      CTX \033[32m━━━━━━─────────\033[0m \033[2;90m0\033[0m45%% │ 5H \033[33m━━━━────\033[0m \033[2;90m0\033[0m62%% │ 7D \033[32m━━──────\033[0m \033[2;90m0\033[0m28%%\n"
+            printf "      CTX \033[32m━━━━━━─────────\033[0m \033[2;90m0\033[0m45%% │ 5H \033[33m━━━━────\033[0m \033[2;90m0\033[0m62%% ↻\033[2;90m0\033[0m3h\033[2;90m1\033[0m5m │ 7D \033[32m━━──────\033[0m \033[2;90m0\033[0m28%% ↻\033[2;90m0\033[0m4d\033[2;90m1\033[0m8h\n"
             ;;
         3)
             printf "      Claude Opus 4.7 │ my-project │ main ✎3 ↑2\n"
@@ -76,7 +76,7 @@ choose_layout() {
         echo "  2) Two lines — header, then combined gauges"
         print_preview 2
         echo ""
-        echo "  3) Three lines — CTX bar gets its own line, rate limits with countdowns"
+        echo "  3) Three lines — CTX bar gets its own line, full-width gauges"
         print_preview 3
         echo ""
         printf "Enter choice [1/2/3] (default: %s): " "$default_layout"

@@ -115,16 +115,14 @@ if [ -n "$status_out" ]; then
 fi
 header="$J_MODEL │ $project_name │${branch_str}"
 
-# Layout dispatch — bar widths, countdown flag, and printf format per layout.
+# Layout dispatch — bar widths and printf format per layout.
 case "$LINES" in
-    1) ctx_w=5;  rate_w=5;  show_cd=0; fmt='%b │ %b │ %b │ %b\n' ;;
-    2) ctx_w=15; rate_w=8;  show_cd=0; fmt='%b\n%b │ %b │ %b\n' ;;
-    *) ctx_w=30; rate_w=10; show_cd=1; fmt='%b\n%b\n%b │ %b\n' ;;
+    1) ctx_w=5;  rate_w=5;  fmt='%b │ %b │ %b │ %b\n' ;;
+    2) ctx_w=15; rate_w=8;  fmt='%b\n%b │ %b │ %b\n' ;;
+    *) ctx_w=30; rate_w=10; fmt='%b\n%b\n%b │ %b\n' ;;
 esac
 
 render_seg "CTX" "$J_USED" "" "$ctx_w"; ctx="$_seg"
-h5_resets=""; d7_resets=""
-[ "$show_cd" -eq 1 ] && h5_resets="$J_H5_RESET" && d7_resets="$J_D7_RESET"
-render_seg "5H" "$J_H5_PCT" "$h5_resets" "$rate_w"; seg5="$_seg"
-render_seg "7D" "$J_D7_PCT" "$d7_resets" "$rate_w"; seg7="$_seg"
+render_seg "5H" "$J_H5_PCT" "$J_H5_RESET" "$rate_w"; seg5="$_seg"
+render_seg "7D" "$J_D7_PCT" "$J_D7_RESET" "$rate_w"; seg7="$_seg"
 printf "$fmt" "$header" "$ctx" "$seg5" "$seg7"
