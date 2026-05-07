@@ -25,6 +25,16 @@ A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-
 - `git` — optional, for branch display
 - Claude Code recent enough to provide `.rate_limits` in the statusline JSON
 
+### Platform support
+
+| Platform | Status |
+|----------|--------|
+| macOS | Works out of the box (install `jq` via `brew install jq`) |
+| Linux | Works out of the box (install `jq` via your package manager) |
+| Windows + WSL | Works (treated as Linux) |
+| Windows native (Git for Windows installed) | Works — Claude Code on Windows runs statusLine commands through Git Bash automatically |
+| Windows native (no Git Bash) | Not supported — install [Git for Windows](https://git-scm.com/download/win) to enable |
+
 ## Install
 
 One-liner (downloads the installer + statusline script from the latest GitHub release):
