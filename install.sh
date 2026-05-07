@@ -124,7 +124,7 @@ main() {
     echo "  Selected: ${layout}-line layout"
     local cmd_value="~/.claude/statusline-command.sh $layout"
 
-    # Configure settings.json — install.sh owns .statusLine.command, preserves everything else.
+    # Set .statusLine.command in settings.json (creates the full statusLine block on first install).
     if [ -f "$SETTINGS" ]; then
         if ! command -v jq >/dev/null 2>&1; then
             echo "Error: jq is required to merge into existing $SETTINGS" >&2

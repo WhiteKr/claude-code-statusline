@@ -4,20 +4,20 @@ A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-
 
 **3-line (default)** — context bar gets its own line, rate limits with countdowns:
 ```
- Claude Opus 4.7 │ my-project │ main ✎3 ↑2
- CTX ━━━━━━━━━━━━━───────────────── 045%
- 5H ━━━━━━──── 062% ↻03h15m │ 7D ━━──────── 028% ↻04d18h
+Claude Opus 4.7 │ my-project │ main ✎3 ↑2
+CTX ━━━━━━━━━━━━━───────────────── 045%
+5H ━━━━━━──── 062% ↻03h15m │ 7D ━━──────── 028% ↻04d18h
 ```
 
 **2-line** — header, then combined gauges:
 ```
- Claude Opus 4.7 │ my-project │ main ✎3 ↑2
- CTX ━━━━━━───────── 045% │ 5H ━━━━──── 062% │ 7D ━━────── 028%
+Claude Opus 4.7 │ my-project │ main ✎3 ↑2
+CTX ━━━━━━───────── 045% │ 5H ━━━━──── 062% │ 7D ━━────── 028%
 ```
 
 **1-line** — everything on one line, with mini bars:
 ```
- Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% │ 5H ━━━── 062% │ 7D ━──── 028%
+Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% │ 5H ━━━── 062% │ 7D ━──── 028%
 ```
 
 ## Features
