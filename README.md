@@ -1,19 +1,31 @@
 # Claude Code Statusline
 
-A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays model, project, git status, context window, and rate limit usage in a compact 3-line layout.
+A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that displays model, project, git status, context window, and rate limit usage. Pick a 1-, 2-, or 3-line layout at install time.
 
+**3-line (default)** — context bar gets its own line, rate limits with countdowns:
 ```
  Claude Opus 4.7 │ my-project │ main ✎3 ↑2
  CTX ━━━━━━━━━━━━━───────────────── 045%
  5H ━━━━━━──── 062% ↻03h15m │ 7D ━━──────── 028% ↻04d18h
 ```
 
+**2-line** — header, then combined gauges:
+```
+ Claude Opus 4.7 │ my-project │ main ✎3 ↑2
+ CTX ━━━━━━───────── 045% │ 5H ━━━━──── 062% │ 7D ━━────── 028%
+```
+
+**1-line** — everything on one line, with mini bars:
+```
+ Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% │ 5H ━━━── 062% │ 7D ━──── 028%
+```
+
 ## Features
 
-- **3-line layout** — model/project/branch, context bar, rate limits on separate lines
-- **Unicode progress bars** — `━` filled / `─` empty for clean visuals
-- **Context window** — 30-char bar with percent
-- **5-hour & 7-day rate limits** — 10-char bars with percent and time-until-reset
+- **Choose your layout** — 1, 2, or 3 lines, picked interactively during install
+- **Unicode progress bars** — `━` filled / `─` empty, every layout shows bars (5/15/30 chars depending on layout)
+- **Context window** — bar + percent on every layout
+- **5-hour & 7-day rate limits** — bars + percent; countdowns shown in 3-line mode
 - **Git branch** — current branch with dirty file count (`✎N`) and upstream divergence (`↑ahead ↓behind`)
 - **Dim leading zeros** — fixed-width numerics with leading zeros dimmed for visual stability
 - **Zero external calls** — rate limit data read directly from Claude Code's stdin JSON
@@ -43,6 +55,12 @@ One-liner (downloads the installer + statusline script from the latest GitHub re
 curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/download/install.sh | bash
 ```
 
+The installer prompts you to pick a 1-, 2-, or 3-line layout (with rendered previews) and writes the chosen layout into `~/.claude/settings.local.json`. To skip the prompt — for example in CI — set `STATUSLINE_LINES`:
+
+```bash
+curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/download/install.sh | STATUSLINE_LINES=2 bash
+```
+
 Or clone and run:
 
 ```bash
@@ -59,19 +77,23 @@ curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/dow
 chmod +x ~/.claude/statusline-command.sh
 ```
 
-Then add to `~/.claude/settings.local.json`:
+Then add to `~/.claude/settings.local.json` (the trailing `3` is the layout — change to `1` or `2` for fewer lines):
 
 ```json
 {
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/statusline-command.sh",
+    "command": "~/.claude/statusline-command.sh 3",
     "padding": 2
   }
 }
 ```
 
 Restart Claude Code.
+
+### Changing layout later
+
+Re-run the installer (it detects your current choice and offers it as the default), or edit `~/.claude/settings.local.json` directly and change the trailing `1`/`2`/`3` argument on `.statusLine.command`.
 
 ## What's Displayed
 

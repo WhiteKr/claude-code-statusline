@@ -1,6 +1,10 @@
 #!/bin/bash
 input=$(cat)
 
+# Layout: 1, 2, or 3 lines (default 3). Set by install.sh via the command arg.
+LINES="${1:-3}"
+case "$LINES" in 1|2|3) ;; *) LINES=3 ;; esac
+
 # ── Parse JSON ────────────────────────────────
 eval "$(echo "$input" | jq -r '
   @sh "J_MODEL=\(.model.display_name // "?")",
@@ -17,7 +21,6 @@ eval "$(echo "$input" | jq -r '
 : "${J_D7_PCT:=null}" "${J_D7_RESET:=null}"
 
 # ── Helpers ───────────────────────────────────
-# bar_color <pct_int> → sets _color (ANSI escape)
 bar_color() {
     if [ "$1" -lt 50 ]; then _color='\033[32m'
     elif [ "$1" -lt 80 ]; then _color='\033[33m'
@@ -25,7 +28,6 @@ bar_color() {
     fi
 }
 
-# dim_pad <number> <width> → prints number with dim leading zeros
 dim_pad() {
     local num="$1" w="$2"
     local padded; padded=$(printf "%0${w}d" "$num")
@@ -40,7 +42,6 @@ dim_pad() {
     fi
 }
 
-# draw_bar <pct_int> <width> → sets _bar
 draw_bar() {
     local pct=$1 w=$2
     local f=$(( pct * w / 100 ))
@@ -52,7 +53,6 @@ draw_bar() {
     for i in $(seq 1 $e); do _bar="${_bar}─"; done
 }
 
-# format_remaining <unix_epoch> → prints human countdown
 format_remaining() {
     local resets_at="$1"
     local now; now=$(date +%s)
@@ -67,25 +67,47 @@ format_remaining() {
     fi
 }
 
-# render_rate_seg <label> <pct_raw> <resets_at_raw> → sets _seg
+# render_ctx_seg <bar_width>   bar_width=0 → no bar, just percent
+render_ctx_seg() {
+    local bar_w=$1
+    if [ "$(echo "$J_USED" | awk '{print ($1 >= 0) ? 1 : 0}')" = "1" ]; then
+        local ctx_int; ctx_int=$(printf "%.0f" "$J_USED")
+        bar_color "$ctx_int"; local color="$_color"
+        local bar_part=""
+        if [ "$bar_w" -gt 0 ]; then
+            draw_bar "$ctx_int" "$bar_w"
+            bar_part="${color}${_bar}\033[0m "
+        fi
+        local pct_str; pct_str=$(dim_pad "$ctx_int" 3)
+        _ctx="CTX ${bar_part}${pct_str}%"
+    else
+        _ctx="CTX --"
+    fi
+}
+
+# render_rate_seg <label> <pct_raw> <resets_raw> <bar_width> <show_countdown 0|1>
 render_rate_seg() {
-    local label="$1" pct_raw="$2" resets_raw="$3"
+    local label="$1" pct_raw="$2" resets_raw="$3" bar_w="$4" show_cd="$5"
     if [ "$pct_raw" = "null" ] || [ -z "$pct_raw" ]; then
         _seg="${label} --"
         return
     fi
     local pct_int; pct_int=$(printf "%.0f" "$pct_raw")
     bar_color "$pct_int"; local color="$_color"
-    draw_bar "$pct_int" 10; local bar="$_bar"
-    local countdown=""
-    if [ "$resets_raw" != "null" ] && [ -n "$resets_raw" ]; then
-        countdown=" ↻$(format_remaining "$resets_raw")"
+    local bar_part=""
+    if [ "$bar_w" -gt 0 ]; then
+        draw_bar "$pct_int" "$bar_w"
+        bar_part="${color}${_bar}\033[0m "
     fi
     local pct_str; pct_str=$(dim_pad "$pct_int" 3)
-    _seg="${label} ${color}${bar}\033[0m ${pct_str}%${countdown}"
+    local countdown=""
+    if [ "$show_cd" = "1" ] && [ "$resets_raw" != "null" ] && [ -n "$resets_raw" ]; then
+        countdown=" ↻$(format_remaining "$resets_raw")"
+    fi
+    _seg="${label} ${bar_part}${pct_str}%${countdown}"
 }
 
-# ── Line 1: Model | Project | Branch ──────────
+# ── Header (model | project | branch) ─────────
 project_name=$(basename "$J_PROJECT_DIR")
 git_branch=$(git -C "$J_PROJECT_DIR" branch --show-current 2>/dev/null)
 branch_str=""
@@ -104,23 +126,26 @@ if [ -n "$git_branch" ]; then
         [ "$behind" -gt 0 ] 2>/dev/null && branch_str="${branch_str} ↓${behind}"
     fi
 fi
-L1=" $J_MODEL │ $project_name │${branch_str}"
+header=" $J_MODEL │ $project_name │${branch_str}"
 
-# ── Line 2: CTX gauge ─────────────────────────
-if [ "$(echo "$J_USED" | awk '{print ($1 >= 0) ? 1 : 0}')" = "1" ]; then
-    ctx_int=$(printf "%.0f" "$J_USED")
-    bar_color "$ctx_int"; ctx_color="$_color"
-    draw_bar "$ctx_int" 30; ctx_bar="$_bar"
-    ctx_str=$(dim_pad "$ctx_int" 3)
-    L2=" CTX ${ctx_color}${ctx_bar}\033[0m ${ctx_str}%"
-else
-    L2=" CTX --"
-fi
-
-# ── Line 3: Rate limits ───────────────────────
-render_rate_seg "5H" "$J_H5_PCT" "$J_H5_RESET"; seg5="$_seg"
-render_rate_seg "7D" "$J_D7_PCT" "$J_D7_RESET"; seg7="$_seg"
-L3=" ${seg5} │ ${seg7}"
-
-# ── Output ────────────────────────────────────
-printf "%b\n%b\n%b\n" "$L1" "$L2" "$L3"
+# ── Assemble output by layout ─────────────────
+case "$LINES" in
+    3)
+        render_ctx_seg 30; ctx="$_ctx"
+        render_rate_seg "5H" "$J_H5_PCT" "$J_H5_RESET" 10 1; seg5="$_seg"
+        render_rate_seg "7D" "$J_D7_PCT" "$J_D7_RESET" 10 1; seg7="$_seg"
+        printf "%b\n %b\n %b │ %b\n" "$header" "$ctx" "$seg5" "$seg7"
+        ;;
+    2)
+        render_ctx_seg 15; ctx="$_ctx"
+        render_rate_seg "5H" "$J_H5_PCT" "$J_H5_RESET" 8 0; seg5="$_seg"
+        render_rate_seg "7D" "$J_D7_PCT" "$J_D7_RESET" 8 0; seg7="$_seg"
+        printf "%b\n %b │ %b │ %b\n" "$header" "$ctx" "$seg5" "$seg7"
+        ;;
+    1)
+        render_ctx_seg 5; ctx="$_ctx"
+        render_rate_seg "5H" "$J_H5_PCT" "$J_H5_RESET" 5 0; seg5="$_seg"
+        render_rate_seg "7D" "$J_D7_PCT" "$J_D7_RESET" 5 0; seg7="$_seg"
+        printf "%b │ %b │ %b │ %b\n" "$header" "$ctx" "$seg5" "$seg7"
+        ;;
+esac
