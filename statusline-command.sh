@@ -51,7 +51,17 @@ draw_bar() {
 }
 
 format_remaining() {
-    local diff=$(( $1 - now ))
+    # Accept epoch seconds or ISO 8601 — schema isn't pinned, so convert via date(1) when non-numeric.
+    local target="$1"
+    case "$target" in
+        ''|*[!0-9]*)
+            target=$(date -d "$1" +%s 2>/dev/null \
+                  || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$1" +%s 2>/dev/null \
+                  || echo "")
+            ;;
+    esac
+    if [ -z "$target" ]; then _rem="--"; return; fi
+    local diff=$(( target - now ))
     if [ "$diff" -le 0 ]; then _rem="now"; return; fi
     local days=$(( diff / 86400 ))
     local hours=$(( (diff % 86400) / 3600 ))
