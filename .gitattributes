@@ -1,0 +1,4 @@
+# Shell scripts ship as GitHub Release assets and run on macOS/Linux — force LF
+# so a CRLF working tree (core.autocrlf=true on Windows) can't upload a script
+# with a `#!/bin/bash\r` shebang that fails as `bad interpreter`.
+*.sh text eol=lf
