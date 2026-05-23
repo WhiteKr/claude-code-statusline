@@ -101,6 +101,18 @@ main() {
     echo "Installing Claude Code statusline..."
     echo "  Config dir: $CONFIG_DIR"
 
+    # Fail fast on missing jq — the statusline itself is unusable without it,
+    # and a silent install + broken-looking statusline is worse than a clear error here.
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Error: jq is required (the statusline parses Claude Code's stdin JSON with jq)" >&2
+        echo "  Install:" >&2
+        echo "    macOS:         brew install jq" >&2
+        echo "    Debian/Ubuntu: apt install jq" >&2
+        echo "    Windows:       winget install jqlang.jq    (or scoop/choco)" >&2
+        echo "    Other:         https://jqlang.github.io/jq/download/" >&2
+        exit 1
+    fi
+
     mkdir -p "$CONFIG_DIR"
 
     # Detect clone mode by checking if statusline-command.sh sits next to this script.
@@ -141,10 +153,6 @@ main() {
 
     # Set .statusLine.command in settings.json (creates the full statusLine block on first install).
     if [ -f "$SETTINGS" ]; then
-        if ! command -v jq >/dev/null 2>&1; then
-            echo "Error: jq is required to merge into existing $SETTINGS" >&2
-            exit 1
-        fi
         local tmp; tmp=$(mktemp)
         if jq -e '.statusLine' "$SETTINGS" >/dev/null 2>&1; then
             jq --arg cmd "$cmd_value" '.statusLine.command = $cmd' "$SETTINGS" > "$tmp"

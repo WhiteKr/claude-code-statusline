@@ -1,4 +1,12 @@
 #!/bin/bash
+# Surface jq absence inline — otherwise everything degrades to "?" / "--" silently
+# and the user has no clue why their statusline lost all its data.
+if ! command -v jq >/dev/null 2>&1; then
+    cat >/dev/null  # drain stdin so Claude Code's writer doesn't block on SIGPIPE
+    printf 'statusline: jq not found in PATH — install jq to enable\n'
+    exit 0
+fi
+
 input=$(cat)
 LINES="${1:-3}"
 
