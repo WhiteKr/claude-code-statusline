@@ -8,13 +8,18 @@
 # Layout selection:
 #   - Interactive: prompts via /dev/tty (works under `curl ... | bash`)
 #   - Non-interactive: set STATUSLINE_LINES=1|2|3 to skip the prompt; defaults to 3
+#
+# Install location: $CLAUDE_CONFIG_DIR if set, otherwise ~/.claude
 
 set -eu
 
 REPO="whitekr/claude-code-statusline"
 RELEASE_BASE="https://github.com/${REPO}/releases/latest/download"
-TARGET="$HOME/.claude/statusline-command.sh"
-SETTINGS="$HOME/.claude/settings.json"
+
+CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+CONFIG_DIR="${CONFIG_DIR%/}"
+TARGET="$CONFIG_DIR/statusline-command.sh"
+SETTINGS="$CONFIG_DIR/settings.json"
 
 # Print a rendered preview for layout 1, 2, or 3.
 print_preview() {
@@ -94,8 +99,9 @@ choose_layout() {
 # Wrapped in a function so `curl | bash` won't execute a partially-downloaded script.
 main() {
     echo "Installing Claude Code statusline..."
+    echo "  Config dir: $CONFIG_DIR"
 
-    mkdir -p "$HOME/.claude"
+    mkdir -p "$CONFIG_DIR"
 
     # Detect clone mode by checking if statusline-command.sh sits next to this script.
     local script_dir=""
@@ -122,7 +128,16 @@ main() {
 
     local layout; layout=$(choose_layout)
     echo "  Selected: ${layout}-line layout"
-    local cmd_value="~/.claude/statusline-command.sh $layout"
+
+    # Use ~/.claude shorthand only when installing to the default location;
+    # for a custom CLAUDE_CONFIG_DIR, store the absolute path so the shell
+    # doesn't expand ~ to the wrong place.
+    local cmd_value
+    if [ "$CONFIG_DIR" = "$HOME/.claude" ]; then
+        cmd_value="~/.claude/statusline-command.sh $layout"
+    else
+        cmd_value="$TARGET $layout"
+    fi
 
     # Set .statusLine.command in settings.json (creates the full statusLine block on first install).
     if [ -f "$SETTINGS" ]; then
@@ -158,7 +173,7 @@ EOF
     echo ""
     echo "Requirements: jq, curl, git (optional)"
     echo "To change layout later: re-run the installer, or edit"
-    echo "  ~/.claude/settings.json   →   .statusLine.command"
+    echo "  $SETTINGS   →   .statusLine.command"
     echo "and pass 1, 2, or 3 as the script argument."
 }
 
