@@ -124,14 +124,17 @@ if [ -n "$status_out" ]; then
             *) dirty_count=$(( dirty_count + 1 )) ;;
         esac
     done <<< "$status_out"
-    if [ -n "$git_branch" ] && [ "$git_branch" != "(detached)" ]; then
+    # Show (detached) too — porcelain v2 emits no branch.ab without an upstream,
+    # so ahead/behind stay 0 and the trailing checks no-op naturally.
+    if [ -n "$git_branch" ]; then
         branch_str=" $git_branch"
         [ "$dirty_count" -gt 0 ] && branch_str="${branch_str} ✎${dirty_count}"
         [ "$ahead" -gt 0 ] && branch_str="${branch_str} ↑${ahead}"
         [ "$behind" -gt 0 ] && branch_str="${branch_str} ↓${behind}"
     fi
 fi
-header="$J_MODEL │ $project_name │${branch_str}"
+# Drop the trailing separator when there's no branch info (non-git dirs).
+header="$J_MODEL │ $project_name${branch_str:+ │${branch_str}}"
 
 # Layout dispatch — bar widths and printf format per layout.
 case "$LINES" in
