@@ -43,11 +43,13 @@ print_preview() {
 detect_existing_layout() {
     [ -f "$SETTINGS" ] || return 0
     command -v jq >/dev/null 2>&1 || return 0
-    local cmd; cmd=$(jq -r '.statusLine.command // ""' "$SETTINGS" 2>/dev/null || echo "")
-    case "$cmd" in
-        *"statusline-command.sh 1"*) echo 1 ;;
-        *"statusline-command.sh 2"*) echo 2 ;;
-        *"statusline-command.sh 3"*) echo 3 ;;
+    local cmd last
+    cmd=$(jq -r '.statusLine.command // ""' "$SETTINGS" 2>/dev/null || echo "")
+    # Match on the last whitespace-separated token, not a substring — otherwise
+    # `*"statusline-command.sh 1"*` would happily match "...sh 12" too.
+    last="${cmd##* }"
+    case "$last" in
+        1|2|3) echo "$last" ;;
     esac
 }
 
