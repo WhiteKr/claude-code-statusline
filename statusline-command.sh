@@ -12,6 +12,7 @@ LINES="${1:-3}"
 
 eval "$(echo "$input" | jq -r '
   @sh "J_MODEL=\(.model.display_name // "?")",
+  @sh "J_EFFORT=\(.effort.level // "")",
   @sh "J_PROJECT_DIR=\(.workspace.project_dir // .cwd // "")",
   @sh "J_USED=\(.context_window.used_percentage // -1)",
   @sh "J_H5_PCT=\(.rate_limits.five_hour.used_percentage // "null")",
@@ -21,7 +22,7 @@ eval "$(echo "$input" | jq -r '
 ' 2>/dev/null)"
 
 # Fallbacks if the jq parse failed entirely.
-: "${J_MODEL:=?}" "${J_PROJECT_DIR:=$PWD}" "${J_USED:=-1}"
+: "${J_MODEL:=?}" "${J_EFFORT:=}" "${J_PROJECT_DIR:=$PWD}" "${J_USED:=-1}"
 : "${J_H5_PCT:=null}" "${J_H5_RESET:=null}"
 : "${J_D7_PCT:=null}" "${J_D7_RESET:=null}"
 
@@ -133,8 +134,10 @@ if [ -n "$status_out" ]; then
         [ "$behind" -gt 0 ] && branch_str="${branch_str} ↓${behind}"
     fi
 fi
+# Reasoning effort dimmed after the model name; ${J_EFFORT:+…} drops it for
+# models that report none — same optional-segment idiom as the branch suffix.
 # Drop the trailing separator when there's no branch info (non-git dirs).
-header="$J_MODEL │ $project_name${branch_str:+ │${branch_str}}"
+header="${J_MODEL}${J_EFFORT:+ \033[2;90m·${J_EFFORT}\033[0m} │ $project_name${branch_str:+ │${branch_str}}"
 
 # Layout dispatch — bar widths and printf format per layout.
 case "$LINES" in

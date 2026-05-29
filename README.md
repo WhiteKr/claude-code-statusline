@@ -4,26 +4,27 @@ A custom statusline for [Claude Code](https://docs.anthropic.com/en/docs/claude-
 
 **3-line (default)** — context bar gets its own line, full-width gauges:
 ```
-Claude Opus 4.7 │ my-project │ main ✎3 ↑2
+Claude Opus 4.7 ·high │ my-project │ main ✎3 ↑2
 CTX ━━━━━━━━━━━━━───────────────── 045%
 5H ━━━━━━──── 062% ↻03h15m │ 7D ━━──────── 028% ↻04d18h
 ```
 
 **2-line** — header, then combined gauges:
 ```
-Claude Opus 4.7 │ my-project │ main ✎3 ↑2
+Claude Opus 4.7 ·high │ my-project │ main ✎3 ↑2
 CTX ━━━━━━───────── 045% │ 5H ━━━━──── 062% ↻03h15m │ 7D ━━────── 028% ↻04d18h
 ```
 
 **1-line** — everything on one line, with mini bars:
 ```
-Claude Opus 4.7 │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% │ 5H ━━━── 062% ↻03h15m │ 7D ━──── 028% ↻04d18h
+Claude Opus 4.7 ·high │ my-project │ main ✎3 ↑2 │ CTX ━━─── 045% │ 5H ━━━── 062% ↻03h15m │ 7D ━──── 028% ↻04d18h
 ```
 
 ## Features
 
 - **Choose your layout** — 1, 2, or 3 lines, picked interactively during install
 - **Unicode progress bars** — `━` filled / `─` empty, every layout shows bars (5/15/30 chars depending on layout)
+- **Reasoning effort** — current `/effort` level shown dimmed after the model name (hidden when the model takes no effort param)
 - **Context window** — bar + percent on every layout
 - **5-hour & 7-day rate limits** — bars + percent + reset countdowns on every layout
 - **Git branch** — current branch with dirty file count (`✎N`) and upstream divergence (`↑ahead ↓behind`)
@@ -71,6 +72,7 @@ Re-run the installer (it detects your current choice and offers it as the defaul
 | Element | Description |
 |---------|-------------|
 | `Claude Opus 4.7` | Model display name |
+| `·high` | Reasoning effort level — `low`/`medium`/`high`/`xhigh`/`max`/`ultra`, dimmed (omitted for models that take no effort param) |
 | `my-project` | Current project directory name |
 | `main` | Git branch (omitted if not in a repo) |
 | `✎3` | Number of modified/untracked files |
