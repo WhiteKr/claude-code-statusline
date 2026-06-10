@@ -7,10 +7,9 @@ if ! command -v jq >/dev/null 2>&1; then
     exit 0
 fi
 
-input=$(cat)
 LINES="${1:-3}"
 
-eval "$(echo "$input" | jq -r '
+eval "$(jq -r '
   @sh "J_MODEL=\(.model.display_name // "?")",
   @sh "J_EFFORT=\(.effort.level // "")",
   @sh "J_PROJECT_DIR=\(.workspace.project_dir // .cwd // "")",
@@ -26,7 +25,7 @@ eval "$(echo "$input" | jq -r '
 : "${J_H5_PCT:=null}" "${J_H5_RESET:=null}"
 : "${J_D7_PCT:=null}" "${J_D7_RESET:=null}"
 
-now=$(date +%s)
+now=${EPOCHSECONDS:-$(date +%s)}
 
 # Hot-path helpers set globals (_color/_bar/_pad/_rem/_seg) instead of echoing,
 # to keep this script fork-light — it runs on every Claude Code render.
@@ -108,7 +107,7 @@ render_seg() {
 }
 
 # Header — single `git status` reads branch + dirty + ahead/behind.
-project_name=$(basename "$J_PROJECT_DIR")
+project_name="${J_PROJECT_DIR%/}"; project_name="${project_name##*/}"
 status_out=$(git -C "$J_PROJECT_DIR" status --porcelain=v2 --branch 2>/dev/null)
 branch_str=""
 if [ -n "$status_out" ]; then
