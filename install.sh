@@ -145,16 +145,22 @@ main() {
 
     # Use ~/.claude shorthand only when installing to the default location;
     # for a custom CLAUDE_CONFIG_DIR, store the absolute path so the shell
-    # doesn't expand ~ to the wrong place.
+    # doesn't expand ~ to the wrong place — quoted, since it may contain spaces.
     local cmd_value
     if [ "$CONFIG_DIR" = "$HOME/.claude" ]; then
         cmd_value="~/.claude/statusline-command.sh $layout"
     else
-        cmd_value="$TARGET $layout"
+        cmd_value="\"$TARGET\" $layout"
     fi
 
     # Set .statusLine.command in settings.json (creates the full statusLine block on first install).
     if [ -f "$SETTINGS" ]; then
+        # Validate up front — otherwise the update jq below dies under set -e
+        # with no hint about what went wrong.
+        if ! jq -e . "$SETTINGS" >/dev/null 2>&1; then
+            echo "Error: $SETTINGS is not valid JSON — fix it and re-run" >&2
+            exit 1
+        fi
         local tmp; tmp=$(mktemp)
         if jq -e '.statusLine' "$SETTINGS" >/dev/null 2>&1; then
             jq --arg cmd "$cmd_value" '.statusLine.command = $cmd' "$SETTINGS" > "$tmp"
@@ -166,15 +172,9 @@ main() {
             echo "  Added statusLine config to $SETTINGS"
         fi
     else
-        cat > "$SETTINGS" <<EOF
-{
-  "statusLine": {
-    "type": "command",
-    "command": "$cmd_value",
-    "padding": 2
-  }
-}
-EOF
+        # jq -n instead of a heredoc so quotes/backslashes in the path are JSON-escaped.
+        jq -n --arg cmd "$cmd_value" \
+            '{statusLine: {type: "command", command: $cmd, padding: 2}}' > "$SETTINGS"
         echo "  Created $SETTINGS with statusLine config"
     fi
 
