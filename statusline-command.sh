@@ -30,10 +30,14 @@ now=${EPOCHSECONDS:-$(date +%s)}
 # Hot-path helpers set globals (_color/_bar/_pad/_rem/_seg) instead of echoing,
 # to keep this script fork-light — it runs on every Claude Code render.
 
+# Real escape bytes ($'…'), not literal backslashes — output goes through %s,
+# which won't re-expand them (and can't expand backslashes lurking in user data).
+dim=$'\033[2;90m' rst=$'\033[0m'
+
 bar_color() {
-    if [ "$1" -lt 50 ]; then _color='\033[32m'
-    elif [ "$1" -lt 80 ]; then _color='\033[33m'
-    else _color='\033[31m'
+    if [ "$1" -lt 50 ]; then _color=$'\033[32m'
+    elif [ "$1" -lt 80 ]; then _color=$'\033[33m'
+    else _color=$'\033[31m'
     fi
 }
 
@@ -42,7 +46,7 @@ dim_pad() {
     printf -v padded "%0${w}d" "$num"
     local pad_len=$(( ${#padded} - ${#num} ))
     if [ "$pad_len" -gt 0 ]; then
-        printf -v _pad '\033[2;90m%s\033[0m%s' "${padded:0:$pad_len}" "$num"
+        _pad="${dim}${padded:0:$pad_len}${rst}${num}"
     else
         _pad="$padded"
     fi
@@ -86,16 +90,16 @@ format_remaining() {
 }
 
 # render_seg <label> <pct_raw> <resets_raw_or_empty> <bar_w>
-# pct_raw of "null"/""/negative → "<label> --". resets="" suppresses the countdown.
+# pct_raw of "null"/""/negative/non-numeric → "<label> --". resets="" suppresses the countdown.
 render_seg() {
     local label="$1" pct_raw="$2" resets="$3" bar_w="$4"
-    case "$pct_raw" in null|""|-*) _seg="${label} --"; return ;; esac
-    local i; printf -v i "%.0f" "$pct_raw"
+    case "$pct_raw" in null|""|-*|*[!0-9.]*) _seg="${label} --"; return ;; esac
+    local i; printf -v i "%.0f" "$pct_raw" 2>/dev/null
     bar_color "$i"
     local bar_part=""
     if [ "$bar_w" -gt 0 ]; then
         draw_bar "$i" "$bar_w"
-        bar_part="${_color}${_bar}\033[0m "
+        bar_part="${_color}${_bar}${rst} "
     fi
     dim_pad "$i" 3
     local pct_str="$_pad" cd=""
@@ -136,13 +140,13 @@ fi
 # Reasoning effort dimmed after the model name; ${J_EFFORT:+…} drops it for
 # models that report none — same optional-segment idiom as the branch suffix.
 # Drop the trailing separator when there's no branch info (non-git dirs).
-header="${J_MODEL}${J_EFFORT:+ \033[2;90m·${J_EFFORT}\033[0m} │ $project_name${branch_str:+ │${branch_str}}"
+header="${J_MODEL}${J_EFFORT:+ ${dim}·${J_EFFORT}${rst}} │ $project_name${branch_str:+ │${branch_str}}"
 
 # Layout dispatch — bar widths and printf format per layout.
 case "$LINES" in
-    1) ctx_w=5;  rate_w=5;  fmt='%b │ %b │ %b │ %b\n' ;;
-    2) ctx_w=15; rate_w=8;  fmt='%b\n%b │ %b │ %b\n' ;;
-    *) ctx_w=30; rate_w=10; fmt='%b\n%b\n%b │ %b\n' ;;
+    1) ctx_w=5;  rate_w=5;  fmt='%s │ %s │ %s │ %s\n' ;;
+    2) ctx_w=15; rate_w=8;  fmt='%s\n%s │ %s │ %s\n' ;;
+    *) ctx_w=30; rate_w=10; fmt='%s\n%s\n%s │ %s\n' ;;
 esac
 
 render_seg "CTX" "$J_USED" "" "$ctx_w"; ctx="$_seg"
