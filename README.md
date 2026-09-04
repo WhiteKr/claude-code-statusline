@@ -66,6 +66,26 @@ curl -fsSL https://github.com/whitekr/claude-code-statusline/releases/latest/dow
 
 Re-run the installer (it detects your current choice and offers it as the default), or edit `~/.claude/settings.json` directly and change the trailing `1`/`2`/`3` argument on `.statusLine.command`.
 
+### As a git submodule
+
+If you keep `~/.claude` in a dotfiles repo, add this repo as a submodule instead of running the installer, so updates come from `git` rather than a re-install:
+
+```bash
+cd ~/.claude
+git submodule add https://github.com/WhiteKr/claude-code-statusline.git statusline
+```
+
+Then point `.statusLine.command` in `~/.claude/settings.json` at the submodule:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "~/.claude/statusline/statusline-command.sh 3"
+}
+```
+
+Update with `git submodule update --remote statusline` and commit the new pointer. On a fresh machine, clone with `--recurse-submodules` or run `git submodule update --init`.
+
 ## What's Displayed
 
 ### Line 1 — Model │ Project │ Branch
