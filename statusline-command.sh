@@ -14,6 +14,8 @@ eval "$(jq -r '
   @sh "J_EFFORT=\(.effort.level // "")",
   @sh "J_PROJECT_DIR=\(.workspace.project_dir // .cwd // "")",
   @sh "J_USED=\(.context_window.used_percentage // -1)",
+  @sh "J_TOK=\((.context_window.total_input_tokens // 0) + (.context_window.total_output_tokens // 0))",
+  @sh "J_WIN=\(.context_window.context_window_size // 0)",
   @sh "J_H5_PCT=\(.rate_limits.five_hour.used_percentage // "null")",
   @sh "J_H5_RESET=\(.rate_limits.five_hour.resets_at // "null")",
   @sh "J_D7_PCT=\(.rate_limits.seven_day.used_percentage // "null")",
@@ -22,6 +24,7 @@ eval "$(jq -r '
 
 # Fallbacks if the jq parse failed entirely.
 : "${J_MODEL:=?}" "${J_EFFORT:=}" "${J_PROJECT_DIR:=$PWD}" "${J_USED:=-1}"
+: "${J_TOK:=0}" "${J_WIN:=0}"
 : "${J_H5_PCT:=null}" "${J_H5_RESET:=null}"
 : "${J_D7_PCT:=null}" "${J_D7_RESET:=null}"
 
@@ -149,7 +152,31 @@ case "$LINES" in
     *) ctx_w=30; rate_w=10; fmt='%s\n%s\n%s │ %s\n' ;;
 esac
 
+# Absolute token count next to CTX% — cost scales with absolute tokens per
+# request, not window percentage, so the compact threshold reads off this number.
+fmt_tokens() {
+    local t="$1"
+    if [ "$t" -ge 1000000 ]; then
+        printf -v _tok "%d.%dM" $(( t / 1000000 )) $(( (t % 1000000) / 100000 ))
+    elif [ "$t" -ge 1000 ]; then
+        _tok="$(( (t + 500) / 1000 ))k"
+    else
+        _tok="$t"
+    fi
+}
+
 render_seg "CTX" "$J_USED" "" "$ctx_w"; ctx="$_seg"
+case "$J_TOK" in ''|*[!0-9]*) ;; *)
+    if [ "$J_TOK" -gt 0 ]; then
+        fmt_tokens "$J_TOK"; tok_str="$_tok"
+        case "$J_WIN" in ''|0|*[!0-9]*) ;; *)
+            fmt_tokens "$J_WIN"; tok_str="${tok_str}${dim}/${_tok}${rst}"
+            ;;
+        esac
+        ctx="${ctx} ${dim}(${rst}${tok_str}${dim})${rst}"
+    fi
+    ;;
+esac
 render_seg "5H" "$J_H5_PCT" "$J_H5_RESET" "$rate_w"; seg5="$_seg"
 render_seg "7D" "$J_D7_PCT" "$J_D7_RESET" "$rate_w"; seg7="$_seg"
 printf "$fmt" "$header" "$ctx" "$seg5" "$seg7"
